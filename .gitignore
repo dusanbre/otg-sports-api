@@ -1,0 +1,32 @@
+# Build artifacts
+bin/
+dist/
+build/
+*.exe
+*.out
+
+# Go modules and caches
+vendor/
+*.test
+*.prof
+coverage.out
+
+# Node dependencies
+node_modules/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Environment and config
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

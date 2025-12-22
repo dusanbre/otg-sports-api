@@ -1,0 +1,22 @@
+CREATE TABLE "soccer_matches" (
+	"id" bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "soccer_matches_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START WITH 1 CACHE 1),
+	"match_id" bigint,
+	"league_gid" bigint,
+	"league_id" bigint,
+	"league_name" varchar(255),
+	"match_status" varchar(50),
+	"match_start_date" date,
+	"match_start_time" time,
+	"h_team_id" bigint,
+	"a_team_id" bigint,
+	"h_team_name" varchar(255),
+	"a_team_name" varchar(255),
+	"h_team_goals" integer,
+	"a_team_goals" integer,
+	"ht_score" varchar(10),
+	"ft_score" varchar(10),
+	"events" json,
+	"created_at" timestamp DEFAULT now(),
+	"updated_at" timestamp DEFAULT now(),
+	CONSTRAINT "soccer_matches_match_id_unique" UNIQUE("match_id")
+);

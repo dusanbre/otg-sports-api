@@ -1,0 +1,32 @@
+import {
+	bigint,
+	date,
+	integer,
+	json,
+	pgTable,
+	time,
+	timestamp,
+	varchar,
+} from "drizzle-orm/pg-core";
+
+export const soccerMatches = pgTable("soccer_matches", {
+	id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+	matchId: bigint("match_id", { mode: "number" }).unique(),
+	leagueGid: bigint("league_gid", { mode: "number" }),
+	leagueId: bigint("league_id", { mode: "number" }),
+	leagueName: varchar("league_name", { length: 255 }),
+	matchStatus: varchar("match_status", { length: 50 }),
+	matchStartDate: date("match_start_date"),
+	matchStartTime: time("match_start_time"),
+	hTeamId: bigint("h_team_id", { mode: "number" }),
+	aTeamId: bigint("a_team_id", { mode: "number" }),
+	hTeamName: varchar("h_team_name", { length: 255 }),
+	aTeamName: varchar("a_team_name", { length: 255 }),
+	hTeamGoals: integer("h_team_goals"),
+	aTeamGoals: integer("a_team_goals"),
+	htScore: varchar("ht_score", { length: 10 }),
+	ftScore: varchar("ft_score", { length: 10 }),
+	events: json("events"),
+	createdAt: timestamp("created_at").defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow(),
+});
