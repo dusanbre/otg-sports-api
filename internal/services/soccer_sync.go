@@ -12,28 +12,28 @@ import (
 	"github.com/dusanbre/otg-sports-api/internal/goalserve"
 )
 
-// MatchSyncService handles syncing matches from Goalserve to database
-type MatchSyncService struct {
+// SoccerSyncService handles syncing soccer matches from Goalserve to database
+type SoccerSyncService struct {
 	db              *database.DB
 	goalserveClient *goalserve.Client
 }
 
-// NewMatchSyncService creates a new match sync service
-func NewMatchSyncService(db *database.DB) *MatchSyncService {
-	return &MatchSyncService{
+// NewSoccerSyncService creates a new soccer sync service
+func NewSoccerSyncService(db *database.DB) *SoccerSyncService {
+	return &SoccerSyncService{
 		db:              db,
 		goalserveClient: goalserve.NewClient(),
 	}
 }
 
-// SyncMatches fetches matches from Goalserve and syncs them to the database
-func (s *MatchSyncService) SyncMatches() error {
-	log.Println("Starting match sync...")
+// SyncMatches fetches soccer matches from Goalserve and syncs them to the database
+func (s *SoccerSyncService) SyncMatches() error {
+	log.Println("Starting soccer match sync...")
 
 	// Fetch today's matches
-	soccerData, err := s.goalserveClient.FetchTodayMatches()
+	soccerData, err := s.goalserveClient.FetchSoccerTodayMatches()
 	if err != nil {
-		return fmt.Errorf("failed to fetch today's matches from Goalserve: %w", err)
+		return fmt.Errorf("failed to fetch today's soccer matches from Goalserve: %w", err)
 	}
 
 	matchesInserted := 0
@@ -42,9 +42,9 @@ func (s *MatchSyncService) SyncMatches() error {
 	// Process today's matches
 	for _, category := range soccerData.Categories {
 		for _, match := range category.Matches.Match {
-			inserted, err := s.upsertMatch(category, match)
+			inserted, err := s.upsertSoccerMatch(category, match)
 			if err != nil {
-				log.Printf("Failed to upsert match %s: %v", match.ID, err)
+				log.Printf("Failed to upsert soccer match %s: %v", match.ID, err)
 				continue
 			}
 			if inserted {
@@ -56,16 +56,16 @@ func (s *MatchSyncService) SyncMatches() error {
 	}
 
 	// Fetch future matches (next 7 days)
-	futureData, err := s.goalserveClient.FetchMatchesFuture7Days()
+	futureData, err := s.goalserveClient.FetchSoccerMatchesFuture7Days()
 	if err != nil {
-		log.Printf("Warning: failed to fetch future matches: %v", err)
+		log.Printf("Warning: failed to fetch future soccer matches: %v", err)
 	} else {
 		// Process future matches
 		for _, category := range futureData.Categories {
 			for _, match := range category.Matches.Match {
-				inserted, err := s.upsertMatch(category, match)
+				inserted, err := s.upsertSoccerMatch(category, match)
 				if err != nil {
-					log.Printf("Failed to upsert future match %s: %v", match.ID, err)
+					log.Printf("Failed to upsert future soccer match %s: %v", match.ID, err)
 					continue
 				}
 				if inserted {
@@ -77,12 +77,12 @@ func (s *MatchSyncService) SyncMatches() error {
 		}
 	}
 
-	log.Printf("Match sync completed: %d inserted, %d updated", matchesInserted, matchesUpdated)
+	log.Printf("Soccer match sync completed: %d inserted, %d updated", matchesInserted, matchesUpdated)
 	return nil
 }
 
-// upsertMatch inserts or updates a match in the database
-func (s *MatchSyncService) upsertMatch(category goalserve.GoalServeScoreCategory, match goalserve.GoalServeMatch) (bool, error) {
+// upsertSoccerMatch inserts or updates a soccer match in the database
+func (s *SoccerSyncService) upsertSoccerMatch(category goalserve.GoalServeSoccerCategory, match goalserve.GoalServeSoccerMatch) (bool, error) {
 	// Parse match ID
 	matchID, err := strconv.ParseInt(match.ID, 10, 64)
 	if err != nil {
@@ -171,7 +171,7 @@ func (s *MatchSyncService) upsertMatch(category goalserve.GoalServeScoreCategory
 		eventsBytes, err := json.Marshal(match.Events)
 		if err == nil {
 			var eventsWrapper struct {
-				Event []goalserve.GoalServeEvent `json:"event"`
+				Event []goalserve.GoalServeSoccerEvent `json:"event"`
 			}
 			if err := json.Unmarshal(eventsBytes, &eventsWrapper); err == nil && len(eventsWrapper.Event) > 0 {
 				eventsJSON, _ = json.Marshal(eventsWrapper.Event)

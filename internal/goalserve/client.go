@@ -37,8 +37,8 @@ func (c *Client) Close() {
 	}
 }
 
-// FetchTodayMatches fetches today's soccer matches from Goalserve API
-func (c *Client) FetchTodayMatches() (*GoalServeScores, error) {
+// FetchSoccerTodayMatches fetches today's soccer matches from Goalserve API
+func (c *Client) FetchSoccerTodayMatches() (*GoalServeSoccerScores, error) {
 	// Wait for rate limiter
 	<-c.rateLimiter.C
 
@@ -46,13 +46,13 @@ func (c *Client) FetchTodayMatches() (*GoalServeScores, error) {
 
 	log.Printf("Fetching matches from GoalServe: %s", url)
 
-	return c.fetchMatchesFromURL(url)
+	return c.fetchSoccerMatchesFromURL(url)
 }
 
-// FetchMatchesPast7Days fetches soccer matches for the past 7 days
-func (c *Client) FetchMatchesPast7Days() (*GoalServeScores, error) {
-	var allScores GoalServeScores
-	allScores.Categories = make([]GoalServeScoreCategory, 0)
+// FetchSoccerMatchesPast7Days fetches soccer matches for the past 7 days
+func (c *Client) FetchSoccerMatchesPast7Days() (*GoalServeSoccerScores, error) {
+	var allScores GoalServeSoccerScores
+	allScores.Categories = make([]GoalServeSoccerCategory, 0)
 
 	// Fetch matches for past 7 days (d-1 to d-7)
 	for day := 1; day <= 7; day++ {
@@ -63,7 +63,7 @@ func (c *Client) FetchMatchesPast7Days() (*GoalServeScores, error) {
 
 		log.Printf("Fetching past matches from GoalServe (day %d): %s", day, url)
 
-		scores, err := c.fetchMatchesFromURL(url)
+		scores, err := c.fetchSoccerMatchesFromURL(url)
 		if err != nil {
 			log.Printf("Failed to fetch matches for past day %d: %v", day, err)
 			continue // Continue with other days even if one fails
@@ -83,10 +83,10 @@ func (c *Client) FetchMatchesPast7Days() (*GoalServeScores, error) {
 	return &allScores, nil
 }
 
-// FetchMatchesFuture7Days fetches soccer matches for the next 7 days
-func (c *Client) FetchMatchesFuture7Days() (*GoalServeScores, error) {
-	var allScores GoalServeScores
-	allScores.Categories = make([]GoalServeScoreCategory, 0)
+// FetchSoccerMatchesFuture7Days fetches soccer matches for the next 7 days
+func (c *Client) FetchSoccerMatchesFuture7Days() (*GoalServeSoccerScores, error) {
+	var allScores GoalServeSoccerScores
+	allScores.Categories = make([]GoalServeSoccerCategory, 0)
 
 	// Fetch matches for next 7 days (d1 to d7)
 	for day := 1; day <= 7; day++ {
@@ -97,7 +97,7 @@ func (c *Client) FetchMatchesFuture7Days() (*GoalServeScores, error) {
 
 		log.Printf("Fetching future matches from GoalServe (day %d): %s", day, url)
 
-		scores, err := c.fetchMatchesFromURL(url)
+		scores, err := c.fetchSoccerMatchesFromURL(url)
 		if err != nil {
 			log.Printf("Failed to fetch matches for future day %d: %v", day, err)
 			continue // Continue with other days even if one fails
@@ -117,8 +117,8 @@ func (c *Client) FetchMatchesFuture7Days() (*GoalServeScores, error) {
 	return &allScores, nil
 }
 
-// fetchMatchesFromURL is a helper function to fetch matches from a specific URL
-func (c *Client) fetchMatchesFromURL(url string) (*GoalServeScores, error) {
+// fetchSoccerMatchesFromURL is a helper function to fetch soccer matches from a specific URL
+func (c *Client) fetchSoccerMatchesFromURL(url string) (*GoalServeSoccerScores, error) {
 	resp, err := c.HTTPClient.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch matches: %w", err)
@@ -153,8 +153,8 @@ func (c *Client) fetchMatchesFromURL(url string) (*GoalServeScores, error) {
 		return nil, fmt.Errorf("failed to marshal scores data: %w", err)
 	}
 
-	// Unmarshal directly into GoalServeScores
-	var scores GoalServeScores
+	// Unmarshal directly into GoalServeSoccerScores
+	var scores GoalServeSoccerScores
 	if err := json.Unmarshal(scoresJSON, &scores); err != nil {
 		return nil, fmt.Errorf("failed to parse scores JSON: %w", err)
 	}

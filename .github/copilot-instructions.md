@@ -10,11 +10,11 @@
 **Core Components:**
 1. `internal/goalserve/`: HTTP client for GoalServe API (rate-limited: 1 req/sec)
 2. `internal/database/`: Singleton DB wrapper with Squirrel query builder
-3. `internal/services/`: Business logic (match sync orchestration)
+3. `internal/services/`: Business logic (sport-specific sync services)
 
 **Data Flow:**
 ```
-GoalServe API → Client (rate-limited) → MatchSyncService → PostgreSQL
+GoalServe API → Client (rate-limited) → SoccerSyncService → PostgreSQL
                 ↓
         Fetch today + ±7 days → Upsert logic → soccer_matches table
 ```
@@ -42,12 +42,12 @@ db.Conn.QueryRow(sql, args...).Scan(...)
 
 ### API Client Conventions
 - **Rate limiting**: GoalServe client uses `time.Ticker` (1 req/sec) - always `<-c.rateLimiter.C`
-- **JSON handling**: Handle both single object and arrays (see `GoalServeMatchesData.UnmarshalJSON`)
+- **JSON handling**: Handle both single object and arrays (see `GoalServeSoccerMatchesData.UnmarshalJSON`)
 - **Date parsing**: Supports `02.01.2006` format; combine date+time for match scheduling
 - **Error handling**: Log and continue on single match failures to avoid blocking batch sync
 
 ### Service Layer
-- **Upsert pattern** in `match_sync.go`: Check existence → Insert or Update
+- **Upsert pattern** in `soccer_sync.go`: Check existence → Insert or Update
 - Returns `(inserted bool, error)` to track sync metrics
 - Logs inserted/updated counts at end of each sync run
 - Fetches 3 time windows: today, past 7 days, future 7 days
@@ -81,10 +81,10 @@ go run main.go
 1. Update `migrations/schema.ts` (Drizzle schema)
 2. Run `npx drizzle-kit generate` and `npx drizzle-kit push`
 3. Update `database/models.go` (Go struct with matching types)
-4. Update `services/match_sync.go` upsert logic to populate new fields
+4. Update `services/soccer_sync.go` upsert logic to populate new fields
 
 ### Testing Match Sync
-- Sample data: `sample/soccernew.json` (reference for GoalServe response structure)
+- Sample data: `etc/sample/soccernew.json` (reference for GoalServe response structure)
 - Manual sync: Run `go run main.go` (runs immediate sync on startup before scheduler)
 - Scheduler runs every 1 minute (configured in `main.go` via `gocron.DurationJob`)
 
@@ -92,8 +92,9 @@ go run main.go
 
 - [main.go](main.go): Scheduler setup, graceful shutdown
 - [internal/database/db.go](internal/database/db.go): Singleton DB connection with Squirrel
-- [internal/services/match_sync.go](internal/services/match_sync.go): Upsert logic for matches
+- [internal/services/soccer_sync.go](internal/services/soccer_sync.go): Soccer upsert logic
 - [internal/goalserve/client.go](internal/goalserve/client.go): Rate-limited API client
+- [internal/goalserve/soccer_models.go](internal/goalserve/soccer_models.go): Soccer API response models
 - [migrations/schema.ts](migrations/schema.ts): Source of truth for DB schema
 
 ## Common Gotchas
