@@ -20,7 +20,26 @@ func NewBasketballHandler(db *database.DB) *BasketballHandler {
 	return &BasketballHandler{db: db}
 }
 
-// GetMatches returns a list of basketball matches
+// GetMatches godoc
+//
+//	@Summary		List basketball matches
+//	@Description	Returns a paginated list of basketball matches with optional filtering
+//	@Tags			basketball
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit		query		int		false	"Maximum results (1-100)"	default(50)
+//	@Param			offset		query		int		false	"Results to skip"			default(0)
+//	@Param			date		query		string	false	"Filter by date (YYYY-MM-DD)"
+//	@Param			status		query		string	false	"Filter by status (FT, Q1, Q2, Q3, Q4, OT, HT)"
+//	@Param			league_id	query		int		false	"Filter by league ID"
+//	@Success		200			{object}	middleware.Response{data=[]dto.BasketballMatchResponse,meta=middleware.MetaInfo}
+//	@Failure		401			{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		403			{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		429			{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		500			{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Security		ApiKeyAuth
+//	@Security		BearerAuth
+//	@Router			/basketball/matches [get]
 func (h *BasketballHandler) GetMatches(w http.ResponseWriter, r *http.Request) {
 	// Parse query parameters
 	params := parseQueryParams(r)
@@ -45,7 +64,21 @@ func (h *BasketballHandler) GetMatches(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// GetMatch returns a single basketball match by ID
+// GetMatch godoc
+//
+//	@Summary		Get basketball match by ID
+//	@Description	Returns a single basketball match by its match ID
+//	@Tags			basketball
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Match ID"
+//	@Success		200	{object}	middleware.Response{data=dto.BasketballMatchResponse}
+//	@Failure		400	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		401	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		404	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Security		ApiKeyAuth
+//	@Security		BearerAuth
+//	@Router			/basketball/matches/{id} [get]
 func (h *BasketballHandler) GetMatch(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -64,7 +97,20 @@ func (h *BasketballHandler) GetMatch(w http.ResponseWriter, r *http.Request) {
 	middleware.RespondJSON(w, http.StatusOK, response)
 }
 
-// GetLiveMatches returns currently live basketball matches
+// GetLiveMatches godoc
+//
+//	@Summary		Get live basketball matches
+//	@Description	Returns all currently live basketball matches
+//	@Tags			basketball
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	middleware.Response{data=[]dto.BasketballMatchResponse}
+//	@Failure		401	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		403	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		500	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Security		ApiKeyAuth
+//	@Security		BearerAuth
+//	@Router			/basketball/matches/live [get]
 func (h *BasketballHandler) GetLiveMatches(w http.ResponseWriter, r *http.Request) {
 	matches, err := h.db.GetLiveBasketballMatches()
 	if err != nil {
@@ -80,7 +126,20 @@ func (h *BasketballHandler) GetLiveMatches(w http.ResponseWriter, r *http.Reques
 	middleware.RespondJSON(w, http.StatusOK, response)
 }
 
-// GetLeagues returns a list of available basketball leagues
+// GetLeagues godoc
+//
+//	@Summary		Get basketball leagues
+//	@Description	Returns a list of all available basketball leagues
+//	@Tags			basketball
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	middleware.Response{data=[]database.LeagueInfo}
+//	@Failure		401	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		403	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		500	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Security		ApiKeyAuth
+//	@Security		BearerAuth
+//	@Router			/basketball/leagues [get]
 func (h *BasketballHandler) GetLeagues(w http.ResponseWriter, r *http.Request) {
 	leagues, err := h.db.GetBasketballLeagues()
 	if err != nil {

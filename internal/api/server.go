@@ -7,11 +7,13 @@ import (
 	"os"
 	"strings"
 
+	_ "github.com/dusanbre/otg-sports-api/internal/api/docs" // Swagger docs
 	"github.com/dusanbre/otg-sports-api/internal/api/handlers"
 	"github.com/dusanbre/otg-sports-api/internal/api/middleware"
 	"github.com/dusanbre/otg-sports-api/internal/database"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 // Server represents the API server
@@ -78,8 +80,8 @@ func (s *Server) setupRouter() *chi.Mux {
 	// Public routes
 	r.Get("/health", healthHandler.Health)
 
-	// TODO: Add swagger routes when documentation is ready
-	// r.Get("/swagger/*", httpSwagger.WrapHandler)
+	// Swagger documentation (available at /swagger/index.html)
+	r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	// Protected API routes
 	r.Route("/api/v1", func(r chi.Router) {

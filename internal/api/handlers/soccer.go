@@ -20,7 +20,26 @@ func NewSoccerHandler(db *database.DB) *SoccerHandler {
 	return &SoccerHandler{db: db}
 }
 
-// GetMatches returns a list of soccer matches
+// GetMatches godoc
+//
+//	@Summary		List soccer matches
+//	@Description	Returns a paginated list of soccer matches with optional filtering
+//	@Tags			soccer
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit		query		int		false	"Maximum results (1-100)"	default(50)
+//	@Param			offset		query		int		false	"Results to skip"			default(0)
+//	@Param			date		query		string	false	"Filter by date (YYYY-MM-DD)"
+//	@Param			status		query		string	false	"Filter by status (FT, 1H, HT, 2H, NS)"
+//	@Param			league_id	query		int		false	"Filter by league ID"
+//	@Success		200			{object}	middleware.Response{data=[]dto.SoccerMatchResponse,meta=middleware.MetaInfo}
+//	@Failure		401			{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		403			{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		429			{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		500			{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Security		ApiKeyAuth
+//	@Security		BearerAuth
+//	@Router			/soccer/matches [get]
 func (h *SoccerHandler) GetMatches(w http.ResponseWriter, r *http.Request) {
 	// Parse query parameters
 	params := parseQueryParams(r)
@@ -45,7 +64,21 @@ func (h *SoccerHandler) GetMatches(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// GetMatch returns a single soccer match by ID
+// GetMatch godoc
+//
+//	@Summary		Get soccer match by ID
+//	@Description	Returns a single soccer match by its match ID
+//	@Tags			soccer
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Match ID"
+//	@Success		200	{object}	middleware.Response{data=dto.SoccerMatchResponse}
+//	@Failure		400	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		401	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		404	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Security		ApiKeyAuth
+//	@Security		BearerAuth
+//	@Router			/soccer/matches/{id} [get]
 func (h *SoccerHandler) GetMatch(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -64,7 +97,20 @@ func (h *SoccerHandler) GetMatch(w http.ResponseWriter, r *http.Request) {
 	middleware.RespondJSON(w, http.StatusOK, response)
 }
 
-// GetLiveMatches returns currently live soccer matches
+// GetLiveMatches godoc
+//
+//	@Summary		Get live soccer matches
+//	@Description	Returns all currently live soccer matches
+//	@Tags			soccer
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	middleware.Response{data=[]dto.SoccerMatchResponse}
+//	@Failure		401	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		403	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		500	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Security		ApiKeyAuth
+//	@Security		BearerAuth
+//	@Router			/soccer/matches/live [get]
 func (h *SoccerHandler) GetLiveMatches(w http.ResponseWriter, r *http.Request) {
 	matches, err := h.db.GetLiveSoccerMatches()
 	if err != nil {
@@ -80,7 +126,20 @@ func (h *SoccerHandler) GetLiveMatches(w http.ResponseWriter, r *http.Request) {
 	middleware.RespondJSON(w, http.StatusOK, response)
 }
 
-// GetLeagues returns a list of available soccer leagues
+// GetLeagues godoc
+//
+//	@Summary		Get soccer leagues
+//	@Description	Returns a list of all available soccer leagues
+//	@Tags			soccer
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	middleware.Response{data=[]database.LeagueInfo}
+//	@Failure		401	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		403	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Failure		500	{object}	middleware.Response{error=middleware.ErrorInfo}
+//	@Security		ApiKeyAuth
+//	@Security		BearerAuth
+//	@Router			/soccer/leagues [get]
 func (h *SoccerHandler) GetLeagues(w http.ResponseWriter, r *http.Request) {
 	leagues, err := h.db.GetSoccerLeagues()
 	if err != nil {

@@ -3,14 +3,16 @@
 ## Architecture Overview
 
 **Hybrid Stack:** Go backend with TypeScript/Drizzle for schema management only.
-- **Go** (`main.go`): Scheduler-based sync service using `gocron` (1-min intervals)
+- **Go** (`main.go`): CLI-based application using Cobra (serve, sync, apikey commands)
 - **TypeScript** (Node.js): Schema definition and migrations via Drizzle ORM
 - **PostgreSQL**: Primary data store with connection pooling
 
 **Core Components:**
-1. `internal/goalserve/`: HTTP client for GoalServe API (rate-limited: 1 req/sec)
-2. `internal/database/`: Singleton DB wrapper with Squirrel query builder
-3. `internal/services/`: Business logic (sport-specific sync services)
+1. `cmd/`: Cobra CLI commands (serve, sync, apikey)
+2. `internal/api/`: REST API server with Chi router
+3. `internal/goalserve/`: HTTP client for GoalServe API (rate-limited: 1 req/sec)
+4. `internal/database/`: Singleton DB wrapper with Squirrel query builder
+5. `internal/services/`: Business logic (sport-specific sync services)
 
 **Supported Sports:**
 - **Soccer**: `SoccerSyncService` → `soccer_matches` table
@@ -22,7 +24,41 @@ GoalServe API → Client (rate-limited) → SoccerSyncService     → soccer_mat
                                       → BasketballSyncService → basketball_matches
                 ↓
         Fetch today + future 7 days → Upsert logic → sport-specific tables
+                ↓
+REST API ← Chi Router ← API Key Auth ← Rate Limiting ← Client Request
 ```
+
+## CLI Commands
+
+```bash
+# Start the REST API server
+go run main.go serve --port 8080
+
+# Run the data sync scheduler
+go run main.go sync
+
+# API key management
+go run main.go apikey create --name "My App" --sports soccer,basketball
+go run main.go apikey list
+go run main.go apikey revoke <id>
+```
+
+## REST API
+
+**Base URL:** `/api/v1`
+**Authentication:** API key via `X-API-Key` header or `Authorization: Bearer <key>`
+**Documentation:** Swagger UI at `/swagger/index.html`
+
+### Endpoints
+- `GET /health` - Health check (public)
+- `GET /api/v1/soccer/matches` - List soccer matches
+- `GET /api/v1/soccer/matches/{id}` - Get single match
+- `GET /api/v1/soccer/matches/live` - Live matches
+- `GET /api/v1/soccer/leagues` - List leagues
+- `GET /api/v1/basketball/matches` - List basketball matches
+- `GET /api/v1/basketball/matches/{id}` - Get single match
+- `GET /api/v1/basketball/matches/live` - Live matches
+- `GET /api/v1/basketball/leagues` - List leagues
 
 ## Critical Patterns
 
@@ -99,10 +135,28 @@ go run main.go
 
 ### Testing Match Sync
 - Sample data: `etc/sample/soccernew.json`, `etc/sample/bsktbl_home.json`
-- Manual sync: Run `go run main.go` (runs immediate sync on startup before scheduler)
-- Scheduler runs every 1 minute (configured in `main.go` via `gocron.DurationJob`)
+- Manual sync: Run `go run main.go sync` (runs immediate sync on startup before scheduler)
+- Scheduler runs every 1 minute (configured in `cmd/sync.go` via `gocron.DurationJob`)
+
+### Regenerating Swagger Docs
+```bash
+# After modifying handler annotations
+~/go/bin/swag init -g main.go -o internal/api/docs --parseDependency --parseInternal
+```
 
 ## Key Files Reference
+
+### CLI
+- [cmd/root.go](cmd/root.go): Cobra root command
+- [cmd/serve.go](cmd/serve.go): REST API server command
+- [cmd/sync.go](cmd/sync.go): Sync scheduler command
+- [cmd/apikey.go](cmd/apikey.go): API key management commands
+
+### API
+- [internal/api/server.go](internal/api/server.go): Chi router setup
+- [internal/api/handlers/](internal/api/handlers/): Request handlers
+- [internal/api/middleware/](internal/api/middleware/): Auth, CORS, rate limiting
+- [internal/api/docs/](internal/api/docs/): Generated Swagger documentation
 
 ### Soccer
 - [internal/services/soccer_sync.go](internal/services/soccer_sync.go): Soccer upsert logic

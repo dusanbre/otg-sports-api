@@ -1,0 +1,665 @@
+basePath: /api/v1
+definitions:
+  database.LeagueInfo:
+    properties:
+      gid:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.BasketballMatchResponse:
+    properties:
+      away_team:
+        $ref: '#/definitions/dto.TeamInfo'
+      file_group:
+        type: string
+      home_team:
+        $ref: '#/definitions/dto.TeamInfo'
+      id:
+        type: integer
+      league_gid:
+        type: integer
+      league_id:
+        type: integer
+      league_name:
+        type: string
+      match_id:
+        type: integer
+      quarter_scores:
+        $ref: '#/definitions/dto.QuarterScores'
+      sport:
+        type: string
+      start_date:
+        type: string
+      start_time:
+        type: string
+      status:
+        type: string
+      timer:
+        type: string
+    type: object
+  dto.QuarterScores:
+    properties:
+      ot:
+        $ref: '#/definitions/dto.ScorePair'
+      q1:
+        $ref: '#/definitions/dto.ScorePair'
+      q2:
+        $ref: '#/definitions/dto.ScorePair'
+      q3:
+        $ref: '#/definitions/dto.ScorePair'
+      q4:
+        $ref: '#/definitions/dto.ScorePair'
+    type: object
+  dto.ScorePair:
+    properties:
+      away:
+        type: integer
+      home:
+        type: integer
+    type: object
+  dto.SoccerMatchResponse:
+    properties:
+      away_team:
+        $ref: '#/definitions/dto.TeamInfo'
+      full_time_score:
+        type: string
+      half_time_score:
+        type: string
+      home_team:
+        $ref: '#/definitions/dto.TeamInfo'
+      id:
+        type: integer
+      league_gid:
+        type: integer
+      league_id:
+        type: integer
+      league_name:
+        type: string
+      match_id:
+        type: integer
+      sport:
+        type: string
+      start_date:
+        type: string
+      start_time:
+        type: string
+      status:
+        type: string
+    type: object
+  dto.TeamInfo:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      score:
+        type: integer
+    type: object
+  middleware.ErrorInfo:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  middleware.MetaInfo:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  middleware.Response:
+    properties:
+      data: {}
+      error:
+        $ref: '#/definitions/middleware.ErrorInfo'
+      meta:
+        $ref: '#/definitions/middleware.MetaInfo'
+      success:
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@otgsports.com
+    name: OTG Sports Support
+  description: REST API for accessing sports data synced from GoalServe.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: OTG Sport API
+  version: "1.0"
+paths:
+  /basketball/leagues:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of all available basketball leagues
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/database.LeagueInfo'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get basketball leagues
+      tags:
+      - basketball
+  /basketball/matches:
+    get:
+      consumes:
+      - application/json
+      description: Returns a paginated list of basketball matches with optional filtering
+      parameters:
+      - default: 50
+        description: Maximum results (1-100)
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Results to skip
+        in: query
+        name: offset
+        type: integer
+      - description: Filter by date (YYYY-MM-DD)
+        in: query
+        name: date
+        type: string
+      - description: Filter by status (FT, Q1, Q2, Q3, Q4, OT, HT)
+        in: query
+        name: status
+        type: string
+      - description: Filter by league ID
+        in: query
+        name: league_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.BasketballMatchResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/middleware.MetaInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "429":
+          description: Too Many Requests
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: List basketball matches
+      tags:
+      - basketball
+  /basketball/matches/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a single basketball match by its match ID
+      parameters:
+      - description: Match ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.BasketballMatchResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get basketball match by ID
+      tags:
+      - basketball
+  /basketball/matches/live:
+    get:
+      consumes:
+      - application/json
+      description: Returns all currently live basketball matches
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.BasketballMatchResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get live basketball matches
+      tags:
+      - basketball
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Returns the health status of the API service (public endpoint)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+      summary: Health check
+      tags:
+      - health
+  /soccer/leagues:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of all available soccer leagues
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/database.LeagueInfo'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get soccer leagues
+      tags:
+      - soccer
+  /soccer/matches:
+    get:
+      consumes:
+      - application/json
+      description: Returns a paginated list of soccer matches with optional filtering
+      parameters:
+      - default: 50
+        description: Maximum results (1-100)
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Results to skip
+        in: query
+        name: offset
+        type: integer
+      - description: Filter by date (YYYY-MM-DD)
+        in: query
+        name: date
+        type: string
+      - description: Filter by status (FT, 1H, HT, 2H, NS)
+        in: query
+        name: status
+        type: string
+      - description: Filter by league ID
+        in: query
+        name: league_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.SoccerMatchResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/middleware.MetaInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "429":
+          description: Too Many Requests
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: List soccer matches
+      tags:
+      - soccer
+  /soccer/matches/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a single soccer match by its match ID
+      parameters:
+      - description: Match ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SoccerMatchResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get soccer match by ID
+      tags:
+      - soccer
+  /soccer/matches/live:
+    get:
+      consumes:
+      - application/json
+      description: Returns all currently live soccer matches
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.SoccerMatchResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/middleware.ErrorInfo'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get live soccer matches
+      tags:
+      - soccer
+securityDefinitions:
+  ApiKeyAuth:
+    description: API key for authentication
+    in: header
+    name: X-API-Key
+    type: apiKey
+  BearerAuth:
+    description: Bearer token (use "Bearer <api_key>")
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
