@@ -32,6 +32,9 @@ func main() {
 	// Create soccer sync service
 	soccerSyncService := services.NewSoccerSyncService(db)
 
+	// Create basketball sync service
+	basketballSyncService := services.NewBasketballSyncService(db)
+
 	// Create a new scheduler
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
@@ -39,7 +42,7 @@ func main() {
 	}
 
 	// Schedule the soccer match sync job to run every 1 minute
-	job, err := scheduler.NewJob(
+	soccerJob, err := scheduler.NewJob(
 		gocron.DurationJob(1*time.Minute),
 		gocron.NewTask(func() {
 			log.Println("Running scheduled soccer match sync...")
@@ -49,15 +52,36 @@ func main() {
 		}),
 	)
 	if err != nil {
-		log.Fatalf("Failed to create job: %v", err)
+		log.Fatalf("Failed to create soccer job: %v", err)
 	}
 
-	fmt.Printf("Scheduled job with ID: %s - runs every 1 minute\n", job.ID())
+	fmt.Printf("Scheduled soccer job with ID: %s - runs every 1 minute\n", soccerJob.ID())
 
-	// Run the sync immediately on startup
+	// Schedule the basketball match sync job to run every 1 minute
+	basketballJob, err := scheduler.NewJob(
+		gocron.DurationJob(1*time.Minute),
+		gocron.NewTask(func() {
+			log.Println("Running scheduled basketball match sync...")
+			if err := basketballSyncService.SyncMatches(); err != nil {
+				log.Printf("Error syncing basketball matches: %v", err)
+			}
+		}),
+	)
+	if err != nil {
+		log.Fatalf("Failed to create basketball job: %v", err)
+	}
+
+	fmt.Printf("Scheduled basketball job with ID: %s - runs every 1 minute\n", basketballJob.ID())
+
+	// Run the syncs immediately on startup
 	log.Println("Running initial soccer match sync...")
 	if err := soccerSyncService.SyncMatches(); err != nil {
 		log.Printf("Error in initial soccer sync: %v", err)
+	}
+
+	log.Println("Running initial basketball match sync...")
+	if err := basketballSyncService.SyncMatches(); err != nil {
+		log.Printf("Error in initial basketball sync: %v", err)
 	}
 
 	// Start the scheduler

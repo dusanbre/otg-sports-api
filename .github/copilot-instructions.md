@@ -12,11 +12,16 @@
 2. `internal/database/`: Singleton DB wrapper with Squirrel query builder
 3. `internal/services/`: Business logic (sport-specific sync services)
 
+**Supported Sports:**
+- **Soccer**: `SoccerSyncService` → `soccer_matches` table
+- **Basketball**: `BasketballSyncService` → `basketball_matches` table
+
 **Data Flow:**
 ```
-GoalServe API → Client (rate-limited) → SoccerSyncService → PostgreSQL
+GoalServe API → Client (rate-limited) → SoccerSyncService     → soccer_matches
+                                      → BasketballSyncService → basketball_matches
                 ↓
-        Fetch today + ±7 days → Upsert logic → soccer_matches table
+        Fetch today + future 7 days → Upsert logic → sport-specific tables
 ```
 
 ## Critical Patterns
@@ -81,20 +86,38 @@ go run main.go
 1. Update `migrations/schema.ts` (Drizzle schema)
 2. Run `npx drizzle-kit generate` and `npx drizzle-kit push`
 3. Update `database/models.go` (Go struct with matching types)
-4. Update `services/soccer_sync.go` upsert logic to populate new fields
+4. Update the sport-specific sync service (e.g., `services/soccer_sync.go` or `services/basketball_sync.go`)
+
+### Adding a New Sport
+1. Create `internal/goalserve/{sport}_models.go` with API response structs
+2. Add fetch methods to `internal/goalserve/client.go` (e.g., `FetchBasketballTodayMatches`)
+3. Add table schema to `migrations/schema.ts` and run migrations
+4. Add Go struct to `internal/database/models.go`
+5. Create `internal/services/{sport}_sync.go` with sync service
+6. Add query methods to `internal/database/queries.go`
+7. Register scheduler job in `main.go`
 
 ### Testing Match Sync
-- Sample data: `etc/sample/soccernew.json` (reference for GoalServe response structure)
+- Sample data: `etc/sample/soccernew.json`, `etc/sample/bsktbl_home.json`
 - Manual sync: Run `go run main.go` (runs immediate sync on startup before scheduler)
 - Scheduler runs every 1 minute (configured in `main.go` via `gocron.DurationJob`)
 
 ## Key Files Reference
 
+### Soccer
+- [internal/services/soccer_sync.go](internal/services/soccer_sync.go): Soccer upsert logic
+- [internal/goalserve/soccer_models.go](internal/goalserve/soccer_models.go): Soccer API response models
+
+### Basketball
+- [internal/services/basketball_sync.go](internal/services/basketball_sync.go): Basketball upsert logic
+- [internal/goalserve/basketball_models.go](internal/goalserve/basketball_models.go): Basketball API response models
+
+### Shared
 - [main.go](main.go): Scheduler setup, graceful shutdown
 - [internal/database/db.go](internal/database/db.go): Singleton DB connection with Squirrel
-- [internal/services/soccer_sync.go](internal/services/soccer_sync.go): Soccer upsert logic
+- [internal/database/models.go](internal/database/models.go): Go structs for all sports
+- [internal/database/queries.go](internal/database/queries.go): Query methods for all sports
 - [internal/goalserve/client.go](internal/goalserve/client.go): Rate-limited API client
-- [internal/goalserve/soccer_models.go](internal/goalserve/soccer_models.go): Soccer API response models
 - [migrations/schema.ts](migrations/schema.ts): Source of truth for DB schema
 
 ## Common Gotchas

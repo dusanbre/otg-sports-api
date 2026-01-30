@@ -169,6 +169,138 @@ func (c *Client) fetchSoccerMatchesFromURL(url string) (*GoalServeSoccerScores, 
 	return &scores, nil
 }
 
+// FetchBasketballTodayMatches fetches today's basketball matches from Goalserve API
+func (c *Client) FetchBasketballTodayMatches() (*GoalServeBasketballScores, error) {
+	// Wait for rate limiter
+	<-c.rateLimiter.C
+
+	url := fmt.Sprintf("%s/getfeed/%s/bsktbl/home?json=1", c.BaseURL, c.APIKey)
+
+	log.Printf("Fetching basketball matches from GoalServe: %s", url)
+
+	return c.fetchBasketballMatchesFromURL(url)
+}
+
+// FetchBasketballMatchesPast7Days fetches basketball matches for the past 7 days
+func (c *Client) FetchBasketballMatchesPast7Days() (*GoalServeBasketballScores, error) {
+	var allScores GoalServeBasketballScores
+	allScores.Categories = make([]GoalServeBasketballCategory, 0)
+
+	// Fetch matches for past 7 days (d-1 to d-7)
+	for day := 1; day <= 7; day++ {
+		// Wait for rate limiter
+		<-c.rateLimiter.C
+
+		url := fmt.Sprintf("%s/getfeed/%s/bsktbl/d-%d?json=1", c.BaseURL, c.APIKey, day)
+
+		log.Printf("Fetching past basketball matches from GoalServe (day %d): %s", day, url)
+
+		scores, err := c.fetchBasketballMatchesFromURL(url)
+		if err != nil {
+			log.Printf("Failed to fetch basketball matches for past day %d: %v", day, err)
+			continue // Continue with other days even if one fails
+		}
+
+		// Merge categories
+		allScores.Categories = append(allScores.Categories, scores.Categories...)
+	}
+
+	// Count total matches for logging
+	var totalMatches int
+	for _, category := range allScores.Categories {
+		totalMatches += len(category.Match.Matches)
+	}
+
+	log.Printf("Successfully fetched past 7 days basketball matches: %d total", totalMatches)
+	return &allScores, nil
+}
+
+// FetchBasketballMatchesFuture7Days fetches basketball matches for the next 7 days
+func (c *Client) FetchBasketballMatchesFuture7Days() (*GoalServeBasketballScores, error) {
+	var allScores GoalServeBasketballScores
+	allScores.Categories = make([]GoalServeBasketballCategory, 0)
+
+	// Fetch matches for next 7 days (d1 to d7)
+	for day := 1; day <= 7; day++ {
+		// Wait for rate limiter
+		<-c.rateLimiter.C
+
+		url := fmt.Sprintf("%s/getfeed/%s/bsktbl/d%d?json=1", c.BaseURL, c.APIKey, day)
+
+		log.Printf("Fetching future basketball matches from GoalServe (day %d): %s", day, url)
+
+		scores, err := c.fetchBasketballMatchesFromURL(url)
+		if err != nil {
+			log.Printf("Failed to fetch basketball matches for future day %d: %v", day, err)
+			continue // Continue with other days even if one fails
+		}
+
+		// Merge categories
+		allScores.Categories = append(allScores.Categories, scores.Categories...)
+	}
+
+	// Count total matches for logging
+	var totalMatches int
+	for _, category := range allScores.Categories {
+		totalMatches += len(category.Match.Matches)
+	}
+
+	log.Printf("Successfully fetched future 7 days basketball matches: %d total", totalMatches)
+	return &allScores, nil
+}
+
+// fetchBasketballMatchesFromURL is a helper function to fetch basketball matches from a specific URL
+func (c *Client) fetchBasketballMatchesFromURL(url string) (*GoalServeBasketballScores, error) {
+	resp, err := c.HTTPClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch basketball matches: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(body))
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Parse JSON response - the API response structure has scores at root level
+	var jsonResponse map[string]interface{}
+	if err := json.Unmarshal(body, &jsonResponse); err != nil {
+		return nil, fmt.Errorf("failed to parse JSON response: %w", err)
+	}
+
+	// Extract the scores object from the response
+	scoresData, ok := jsonResponse["scores"]
+	if !ok {
+		return nil, fmt.Errorf("no scores field found in response")
+	}
+
+	// Convert scores data back to JSON for proper unmarshaling
+	scoresJSON, err := json.Marshal(scoresData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal scores data: %w", err)
+	}
+
+	// Unmarshal directly into GoalServeBasketballScores
+	var scores GoalServeBasketballScores
+	if err := json.Unmarshal(scoresJSON, &scores); err != nil {
+		return nil, fmt.Errorf("failed to parse basketball scores JSON: %w", err)
+	}
+
+	// Count total matches for logging
+	var totalMatches int
+	for _, category := range scores.Categories {
+		totalMatches += len(category.Match.Matches)
+	}
+
+	log.Printf("Successfully fetched basketball matches: %d total", totalMatches)
+	return &scores, nil
+}
+
 // getEnv gets an environment variable with a fallback default value
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {

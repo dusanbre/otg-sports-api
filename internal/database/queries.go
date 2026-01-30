@@ -122,3 +122,72 @@ func (db *DB) UpdateMatchScore(matchID int64, hGoals, aGoals int, htScore, ftSco
 
 	return nil
 }
+
+// GetBasketballMatches returns recent basketball matches
+func (db *DB) GetBasketballMatches() ([]BasketballMatch, error) {
+	query := db.Builder.
+		Select("*").
+		From("basketball_matches").
+		OrderBy("match_date DESC").
+		Limit(10)
+
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build query: %w", err)
+	}
+
+	rows, err := db.Conn.Query(sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
+	defer rows.Close()
+
+	var matches []BasketballMatch
+	for rows.Next() {
+		var m BasketballMatch
+		err := rows.Scan(
+			&m.ID, &m.MatchID, &m.LeagueGID, &m.LeagueID, &m.LeagueName, &m.FileGroup,
+			&m.MatchStatus, &m.MatchDate, &m.MatchTime, &m.Timer,
+			&m.HTeamID, &m.HTeamName, &m.HTeamScore,
+			&m.HTeamQ1, &m.HTeamQ2, &m.HTeamQ3, &m.HTeamQ4, &m.HTeamOt,
+			&m.ATeamID, &m.ATeamName, &m.ATeamScore,
+			&m.ATeamQ1, &m.ATeamQ2, &m.ATeamQ3, &m.ATeamQ4, &m.ATeamOt,
+			&m.CreatedAt, &m.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+		matches = append(matches, m)
+	}
+
+	return matches, nil
+}
+
+// GetBasketballMatchByID returns a basketball match by its match ID
+func (db *DB) GetBasketballMatchByID(matchID int64) (*BasketballMatch, error) {
+	query := db.Builder.
+		Select("*").
+		From("basketball_matches").
+		Where("match_id = ?", matchID)
+
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build query: %w", err)
+	}
+
+	var m BasketballMatch
+	err = db.Conn.QueryRow(sql, args...).Scan(
+		&m.ID, &m.MatchID, &m.LeagueGID, &m.LeagueID, &m.LeagueName, &m.FileGroup,
+		&m.MatchStatus, &m.MatchDate, &m.MatchTime, &m.Timer,
+		&m.HTeamID, &m.HTeamName, &m.HTeamScore,
+		&m.HTeamQ1, &m.HTeamQ2, &m.HTeamQ3, &m.HTeamQ4, &m.HTeamOt,
+		&m.ATeamID, &m.ATeamName, &m.ATeamScore,
+		&m.ATeamQ1, &m.ATeamQ2, &m.ATeamQ3, &m.ATeamQ4, &m.ATeamOt,
+		&m.CreatedAt, &m.UpdatedAt,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query basketball match: %w", err)
+	}
+
+	return &m, nil
+}
