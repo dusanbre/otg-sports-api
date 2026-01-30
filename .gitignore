@@ -30,3 +30,6 @@ yarn.lock
 .idea/
 .DS_Store
 Thumbs.db
+
+#Etc
+/etc/sample/*
