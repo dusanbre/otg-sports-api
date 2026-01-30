@@ -1,0 +1,464 @@
+{
+  "id": "715559bf-dd99-4fa8-8b2b-c4f92fec8264",
+  "prevId": "2501727f-ff64-4417-83dd-243cdabfa56c",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.api_keys": {
+      "name": "api_keys",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "api_keys_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "key_hash": {
+          "name": "key_hash",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "key_prefix": {
+          "name": "key_prefix",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sports": {
+          "name": "sports",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rate_limit": {
+          "name": "rate_limit",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 100
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "last_used_at": {
+          "name": "last_used_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "api_keys_key_hash_unique": {
+          "name": "api_keys_key_hash_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "key_hash"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.basketball_matches": {
+      "name": "basketball_matches",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "basketball_matches_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "match_id": {
+          "name": "match_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "league_gid": {
+          "name": "league_gid",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "league_id": {
+          "name": "league_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "league_name": {
+          "name": "league_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "file_group": {
+          "name": "file_group",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "match_status": {
+          "name": "match_status",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "match_date": {
+          "name": "match_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "match_time": {
+          "name": "match_time",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timer": {
+          "name": "timer",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "h_team_id": {
+          "name": "h_team_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "h_team_name": {
+          "name": "h_team_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "h_team_score": {
+          "name": "h_team_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "h_team_q1": {
+          "name": "h_team_q1",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "h_team_q2": {
+          "name": "h_team_q2",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "h_team_q3": {
+          "name": "h_team_q3",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "h_team_q4": {
+          "name": "h_team_q4",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "h_team_ot": {
+          "name": "h_team_ot",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "a_team_id": {
+          "name": "a_team_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "a_team_name": {
+          "name": "a_team_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "a_team_score": {
+          "name": "a_team_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "a_team_q1": {
+          "name": "a_team_q1",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "a_team_q2": {
+          "name": "a_team_q2",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "a_team_q3": {
+          "name": "a_team_q3",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "a_team_q4": {
+          "name": "a_team_q4",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "a_team_ot": {
+          "name": "a_team_ot",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "basketball_matches_match_id_unique": {
+          "name": "basketball_matches_match_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "match_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.soccer_matches": {
+      "name": "soccer_matches",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "soccer_matches_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "match_id": {
+          "name": "match_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "league_gid": {
+          "name": "league_gid",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "league_id": {
+          "name": "league_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "league_name": {
+          "name": "league_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "match_status": {
+          "name": "match_status",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "match_start_date": {
+          "name": "match_start_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "match_start_time": {
+          "name": "match_start_time",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "h_team_id": {
+          "name": "h_team_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "a_team_id": {
+          "name": "a_team_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "h_team_name": {
+          "name": "h_team_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "a_team_name": {
+          "name": "a_team_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "h_team_goals": {
+          "name": "h_team_goals",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "a_team_goals": {
+          "name": "a_team_goals",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ht_score": {
+          "name": "ht_score",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ft_score": {
+          "name": "ft_score",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "events": {
+          "name": "events",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "soccer_matches_match_id_unique": {
+          "name": "soccer_matches_match_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "match_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

@@ -1,9 +1,11 @@
 import {
 	bigint,
+	boolean,
 	date,
 	integer,
 	json,
 	pgTable,
+	text,
 	time,
 	timestamp,
 	varchar,
@@ -60,4 +62,18 @@ export const basketballMatches = pgTable("basketball_matches", {
 	aTeamOt: integer("a_team_ot"),
 	createdAt: timestamp("created_at").defaultNow(),
 	updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// API Keys for authentication
+export const apiKeys = pgTable("api_keys", {
+	id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+	keyHash: varchar("key_hash", { length: 64 }).notNull().unique(), // SHA256 hash
+	keyPrefix: varchar("key_prefix", { length: 16 }).notNull(), // "sk_live_xxxx" for display
+	name: varchar("name", { length: 255 }).notNull(), // Human-readable name
+	sports: json("sports").notNull(), // Array of allowed sports: ["soccer", "basketball"] or ["*"]
+	rateLimit: integer("rate_limit").notNull().default(100), // Requests per minute
+	isActive: boolean("is_active").notNull().default(true),
+	createdAt: timestamp("created_at").defaultNow(),
+	lastUsedAt: timestamp("last_used_at"),
+	expiresAt: timestamp("expires_at"),
 });

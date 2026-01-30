@@ -15,6 +15,13 @@
       "when": 1769771887628,
       "tag": "0001_thankful_ogun",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769774633264,
+      "tag": "0002_optimal_phantom_reporter",
+      "breakpoints": true
     }
   ]
 }

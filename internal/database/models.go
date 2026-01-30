@@ -59,3 +59,33 @@ type BasketballMatch struct {
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 }
+
+// ApiKey represents an API key record for authentication
+type ApiKey struct {
+	ID         int64        `json:"id"`
+	KeyHash    string       `json:"key_hash"`
+	KeyPrefix  string       `json:"key_prefix"`
+	Name       string       `json:"name"`
+	Sports     []string     `json:"sports"`     // Unmarshaled from JSON
+	RateLimit  int          `json:"rate_limit"` // Requests per minute
+	IsActive   bool         `json:"is_active"`
+	CreatedAt  time.Time    `json:"created_at"`
+	LastUsedAt sql.NullTime `json:"last_used_at"`
+	ExpiresAt  sql.NullTime `json:"expires_at"`
+}
+
+// QueryParams holds common query parameters for filtering
+type QueryParams struct {
+	Limit    int
+	Offset   int
+	Date     string
+	Status   string
+	LeagueID *int64
+}
+
+// LeagueInfo represents league information
+type LeagueInfo struct {
+	ID   int64  `json:"id"`
+	GID  int64  `json:"gid"`
+	Name string `json:"name"`
+}
